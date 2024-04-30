@@ -49,19 +49,18 @@ colnames(Patient.dat) <- IBDCRC_meta$Label
 Patient.dat <- Patient.dat[match(rownames(Colon.sum), rownames(Patient.dat)),]
 table(rownames(Patient.dat) == rownames(Colon.sum))
 
-write.csv(Colon.sum, "/mnt/data/Projects/IBD-CRC_WGS_Finland/COOBoostR-results/2_Patientdata_default_10Aug/Data/COO_epimarker.csv", row.names = F)
-write.csv(Patient.dat, "/mnt/data/Projects/IBD-CRC_WGS_Finland/COOBoostR-results/2_Patientdata_default_10Aug/Data/COO_mutation.csv", row.names = F)
+write.csv(Colon.sum, "/mnt/data/Projects/IBD-CRC_WGS_Finland/COOBoostR-results/Patientdata/Data/COO_epimarker.csv", row.names = F)
+write.csv(Patient.dat, "/mnt/data/Projects/IBD-CRC_WGS_Finland/COOBoostR-results/Patientdata/Data/COO_mutation.csv", row.names = F)
 
 ### Cell-of-Origin predictions ####
 #### COOBoost: Celltype major, mEta = 0.3, mdepth = 6 ####
 library(Seurat)
 library(Signac)
 
-setwd("/mnt/data/Projects/IBD-CRC_WGS_Finland/COOBoostR-results/8_Patientdata_Celltype_major_learning0.3_depth6")
 # sourcePath : Directory with data needed for analysis(epimarker, mutation). Must end with a delimiter (/).
-sourcePath <- "/mnt/data/Projects/IBD-CRC_WGS_Finland/COOBoostR-results/6_Patientdata_Celltype_major_Lancet_parameters/Data/"
+sourcePath <- "/mnt/data/Projects/IBD-CRC_WGS_Finland/COOBoostR-results/Patientdata/Data/"
 # resultsPath : The directory where the results will be saved after analysis. Must end with a delimiter (/).
-resultsPath <- "/mnt/data/Projects/IBD-CRC_WGS_Finland/COOBoostR-results/8_Patientdata_Celltype_major_learning0.3_depth6/Results/" 
+resultsPath <- "/mnt/data/Projects/IBD-CRC_WGS_Finland/COOBoostR-results/Patientdata/Results/" 
 
 # Data generated through 1mb preprocessing. Requires csv format.(You need a csv file name, not a data frame or variable.)
 epimarker <- "COO_epimarker.csv"
@@ -77,7 +76,7 @@ cols.cellmajor <- c("#B995E6", "#4AACF0", "#D188AF", "#F3A0DE", "#EA6363", "#AFD
 cols.lineage <- c( "#4AACF0", "#F3A0DE", "#AFD655")
 cols.ibs <- c("#D76A03", "#32908F")
 
-resultsPath <- "/mnt/data/Projects/IBD-CRC_WGS_Finland/COOBoostR-results/8_Patientdata_Celltype_major_learning0.3_depth6/Results/COO_mutation/" 
+resultsPath <- "/mnt/data/Projects/IBD-CRC_WGS_Finland/COOBoostR-results/Patientdata/Results/COO_mutation/" 
 files <- list.files(resultsPath, pattern = "output_")
 files.take <- files[-grep("extract",files)]
 
@@ -110,4 +109,4 @@ data.out %>% dplyr::group_by(Group, Classification) %>% summarize(N = n()) %>% g
   theme(plot.title = element_text(hjust = 0.5)) 
 
 # write data
-write.csv(data.out, "/mnt/data/Projects/IBD-CRC_WGS_Finland/COOBoostR-results/8_Patientdata_Celltype_major_learning0.3_depth6/Results/Patient_COO_prediction.csv")
+write.csv(data.out, "/mnt/data/Projects/IBD-CRC_WGS_Finland/COOBoostR-results/Patientdata/Results/Patient_COO_prediction.csv")
