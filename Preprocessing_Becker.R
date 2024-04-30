@@ -2,10 +2,9 @@ library(Seurat)
 library(ggplot2)
 library(dplyr)
 library(Signac)
-
 path <- ("/mnt/data/User/Mathijs/Becker_polyps_CRC_singlecell")
 
-### scATACseq Becker et al. ####
+### scATACseq Becker et al.: GSE201336 ####
 ####Import Fragment files ####
 epithelial_celltypes_atac <- read.delim(paste(path, "/scATAC_GEO_Normal/epithelial_celltypes_atac.tsv", sep = ""))
 epithelial_celltypes_atac$Cell_short <- sapply(strsplit( epithelial_celltypes_atac$Cell, "#"), "[", 2 )
@@ -80,7 +79,6 @@ B004_A_204 <- CreateFragmentObject(path = "/mnt/data/User/Mathijs/Becker_polyps_
 fragpath = dir('/mnt/data/User/Mathijs/Becker_polyps_CRC_singlecell/scATAC_GEO_Normal/Combined/',"*gz$",full.names=TRUE)
 
 #### Start from 1Mb bed file ####
-
 # Convert Windows.bed to peaks all format
 windows.bed <- as.data.frame(read.table("/mnt/data/User/Mathijs/Becker_polyps_CRC_singlecell/Signac/GRCh38_no_alt.1Mbwindows.min0.92umapk36.noTelomere.noCentromere.autosome.bed",header = FALSE, sep="\t",stringsAsFactors=FALSE, quote=""))
 colnames(windows.bed) <- c("Chr", "Start", "End")
@@ -88,7 +86,6 @@ windows.bed <- GenomicRanges::makeGRangesFromDataFrame(windows.bed)
 
 # Create peak count matrix: All samples
 bin.mat <- FeatureMatrix(fragments = list(B001_A_301,B001_A_302, B001_A_401, B001_A_406, B001_A_501, B004_A_004_R1, B004_A_004_R2, B004_A_008, B004_A_204),features = windows.bed)
-
 #### Create Chromatin Assay  ####
 chrom_assay <- CreateChromatinAssay(
   counts = bin.mat,
@@ -99,23 +96,17 @@ chrom_assay <- CreateChromatinAssay(
 )
 
 # Create Signac Object
-Colon.atac <- CreateSeuratObject(
-  counts = chrom_assay,
-  assay = "bins"
-)
-
+Colon.atac <- CreateSeuratObject(counts = chrom_assay, assay = "bins")
 
 #### Dim reduction ####
 # Normalization and linear dimensional reduction
 Colon.atac <- RunTFIDF(Colon.atac)
 Colon.atac <- FindTopFeatures(Colon.atac, min.cutoff = 'q0')
 Colon.atac <- RunSVD(Colon.atac)
-
 DepthCor(Colon.atac)
 
 # Non-linear dimension reduction and clustering
 Colon.atac <- RunUMAP(object = Colon.atac, reduction = 'lsi', dims = 2:30)
-
 epithelial_celltypes_atac_take <- epithelial_celltypes_atac %>% dplyr::filter(Sample %in% c("B001-A-301-D", "B001-A-302-D", "B001-A-401-D", "B001-A-406-D", "B001-A-501-D", "B004-A-004-D", "B004-A-004-D-R2","B004-A-008-D", "B004-A-204-D" ))
 
 # Add meta 
@@ -145,8 +136,6 @@ cols.lineage <- c( "#4AACF0", "#F3A0DE", "#AFD655")
 
 # With Niko bins
 Colon.atac <- readRDS(paste(path, "/Signac/Colon_Healthy_Signac.rds", sep = ""))
-
-
 Colon.atac$Celltype_major <- Colon.atac$Celltype
 Colon.atac$Celltype_major[Colon.atac$Celltype_major == "Immature Goblet"] <- "Goblet"
 Colon.atac$Celltype_major[Colon.atac$Celltype_major %in% c("TA1", "TA2", "Secretory TA", "Enterocyte Progenitors")] <- "TA"
@@ -157,7 +146,6 @@ Colon.atac$Celltype_lineage <- Colon.atac$Celltype_major
 Colon.atac$Celltype_lineage[Colon.atac$Celltype_lineage %in% c("Stem", "TA") ] <- "Undifferentiated"
 Colon.atac$Celltype_lineage[Colon.atac$Celltype_lineage %in% c("Goblet", "Enteroendocrine") ] <- "Secretory"
 Colon.atac$Celltype_lineage[Colon.atac$Celltype_lineage %in% c("Enterocytes", "Best4+ Enterocytes") ] <- "Absorptive"
-
 
 DimPlot(object = Colon.atac,  group.by = "Celltype", cols = cols.celltype) +
   DimPlot(object = Colon.atac,  group.by = "Celltype_major", cols = cols.cellmajor) +
@@ -171,7 +159,6 @@ DefaultAssay(Colon.atac)
 Colon.atac$Batch <- Colon.atac$Sample
 Colon.atac$Batch[Colon.atac$Batch == "B004-A-004-D-R2"] <- "B004-A-004-D"
 table(Colon.atac$Batch)
-
 Colon.list <- SplitObject(Colon.atac, split.by = "Batch")
 
 # normalize and identify variable features for each dataset independently
@@ -181,10 +168,8 @@ Colon.list <- lapply(X = Colon.list, FUN = function(x) {
 })
 
 features <- SelectIntegrationFeatures(object.list = Colon.list)
-
 colon.anchors <- FindIntegrationAnchors(object.list = Colon.list, anchor.features = features)
 colon.combined <- IntegrateData(anchorset = colon.anchors, verbose = TRUE)
-
 DefaultAssay(colon.combined) <- "integrated"
 
 # Run the standard workflow for visualization and clustering
@@ -192,8 +177,6 @@ colon.combined <- ScaleData(colon.combined, verbose = TRUE)
 colon.combined <- RunPCA(colon.combined, npcs = 30, verbose = TRUE)
 colon.combined <- RunUMAP(colon.combined, reduction = "pca", dims = 1:30)
 
-
 DimPlot(object = colon.combined,  group.by = "Celltype", cols = cols.celltype) +
   DimPlot(object = colon.combined,  group.by = "Celltype_major", cols = cols.cellmajor) +
   DimPlot(object = colon.combined,  group.by = "Celltype_lineage", cols = cols.lineage) 
-
