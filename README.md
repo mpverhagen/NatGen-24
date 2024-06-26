@@ -1,4 +1,6 @@
-# The non-stem origin of colon cancer in the context of inflammation 
+# Non-stem cell lineages as an alternative origin of intestinal tumorigenesis in the context of inflammation
+
+Link to paper [Verhagen et al.](https://www.nature.com/articles/s41588-024-01801-y)  
 
 Cell-of-origin predictions were performed with [COOBoostR](https://github.com/SWJ9385/COOBoostR) and with epigenetic profiles from [Becker et al.](https://www.nature.com/articles/s41588-022-01088-x)
 
